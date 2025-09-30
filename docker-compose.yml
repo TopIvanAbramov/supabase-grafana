@@ -3,6 +3,8 @@ services:
     build: ./
     ports:
       - 9080:3000
+    expose:
+      - "3000"
     environment:
       SUPABASE_ACCESS_TOKEN: ${SUPABASE_ACCESS_TOKEN}
       SUPABASE_ORGANIZATION_ID: ${SUPABASE_ORGANIZATION_ID}
