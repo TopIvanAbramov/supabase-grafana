@@ -1,14 +1,25 @@
+version: '3.7'
 services:
-  supabase-grafana:
-    build: ./
+  collector:
+    image: ghcr.io/supabase/supabase-grafana:latest
+    env_file: .env
     ports:
-      - 8000:8080
-    environment:
-      SUPABASE_ACCESS_TOKEN: ${SUPABASE_ACCESS_TOKEN}
-      SUPABASE_ORGANIZATION_ID: ${SUPABASE_ORGANIZATION_ID}
-      SUPABASE_PROJECT_REF: ${SUPABASE_PROJECT_REF}
-      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
-      PASSWORD_PROTECTED: ${PASSWORD_PROTECTED}
-      GRAFANA_PASSWORD: ${GRAFANA_PASSWORD}
+      - "9000:9000"      # metrics endpoint only
     volumes:
-      - ./data:/data
+      - .//data
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana-oss
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
