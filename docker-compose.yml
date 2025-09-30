@@ -1,35 +1,55 @@
-version: '3.7'
+version: '3.8'
 
 services:
-  collector:
-    build: .
-    environment:
-      SUPABASE_URL: ${SUPABASE_URL}
-      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
-    ports:
-      - "9000:9000"      # Collector metrics endpoint
-    volumes:
-      - collector_data:/data
-
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_/prometheus
-    ports:
-      - "9090:9090"
-
   grafana:
-    image: grafana/grafana-oss:latest
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
-    depends_on:
-      - prometheus
-    volumes:
-      - grafana_/var/lib/grafana
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
     ports:
       - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - GF_INSTALL_PLUGINS=frser-sqlite-datasource
+      - GF_SERVER_ROOT_URL=${SERVER_ROOT_URL:-http://localhost:3000}
+      - GF_DATABASE_TYPE=postgres
+      - GF_DATABASE_HOST=postgres:5432
+      - GF_DATABASE_NAME=${DB_NAME:-grafana}
+      - GF_DATABASE_USER=${DB_USER:-grafana}
+      - GF_DATABASE_PASSWORD=${DB_PASSWORD:-grafana}
+      - GF_DATABASE_SSL_MODE=disable
+    volumes:
+      - grafana_/var/lib/grafana
+      - ./provisioning:/etc/grafana/provisioning
+    depends_on:
+      - postgres
+    networks:
+      - monitoring
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${DB_NAME:-grafana}
+      - POSTGRES_USER=${DB_USER:-grafana}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-grafana}
+    volumes:
+      - postgres_/var/lib/postgresql/data
+    networks:
+      - monitoring
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-grafana}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  collector_data:
-  prometheus_
+  grafana_
+    driver: local
+  postgres_
+    driver: local
+
+networks:
+  monitoring:
+    driver: bridge
