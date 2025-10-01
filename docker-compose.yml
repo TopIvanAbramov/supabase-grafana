@@ -1,8 +1,8 @@
 services:
   supabase-grafana:
     build: ./
-    ports:
-      - 3000
+    # ports:
+    #   - 3000
     expose:
       - "3000"
     environment:
