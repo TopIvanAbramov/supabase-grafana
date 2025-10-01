@@ -2,7 +2,7 @@ services:
   supabase-grafana:
     build: ./
     ports:
-      - 8443:3000
+      - 3000
     expose:
       - "3000"
     environment:
