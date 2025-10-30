@@ -15,7 +15,7 @@ ENV GF_PATHS_DATA=/data/grafana/data \
     GF_AUTH_PROXY_ENABLED="true" \
     GF_USERS_ALLOW_SIGN_UP=false \
     GF_SERVER_HTTP_ADDR="0.0.0.0" \
-    GF_SERVER_HTTP_PORT=8080 \
+    GF_SERVER_HTTP_PORT=3000 \
     GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH="/var/lib/grafana/dashboards/dashboard.json"
 
 RUN apt-get update && \
